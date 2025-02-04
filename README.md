@@ -1,6 +1,6 @@
 A simple CLI written in Qt and C++.
 
-<bold>Features:</bold>
+Features:
 - Tabs
 - previous Command Stack (Arrow Up & Down)
 - borught some of the most used Linux Command into Windows
