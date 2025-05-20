@@ -15,6 +15,7 @@ SOURCES += \
 
 HEADERS += \
     Shell.h \
+    TabLineEdit.h \
     mainwindow.h
 
 FORMS += \

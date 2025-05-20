@@ -77,6 +77,32 @@ QString Shell::execute(const QString &command)
                 }
             });
         }
+        else if (command.startsWith("hcalc"))
+        {
+            QStringList args = command.split(" ");
+            if (args.size() < 3)
+                return "<span style='color: red'>Error: Not enough arguments provided!</span>";
+
+            QRegularExpression timeRegex("^\\d{2}:\\d{2}$");
+            if (!timeRegex.match(args[1]).hasMatch() || !timeRegex.match(args[2]).hasMatch())
+                return "<span style='color: red'>Error: Time format must be HH:mm (e.g., 13:45)!</span>";
+
+            QTime startTime = QTime::fromString(args[1], "HH:mm");
+            QTime endTime = QTime::fromString(args[2], "HH:mm");
+
+            if (!startTime.isValid() || !endTime.isValid())
+                return "<span style='color: red'>Error: Invalid time value provided!</span>";
+
+            int seconds = startTime.secsTo(endTime);
+
+            // Handle times over midnight
+            if (seconds < 0)
+                seconds += 24 * 3600;
+
+            double hoursDecimal = seconds / 3600.0;
+
+            return QString("Time difference: %1h").arg(QString::number(hoursDecimal, 'f', 2));
+        }
         else if (command == "clear")
             space->clear();
         else if (command.startsWith("nano "))

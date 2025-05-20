@@ -23,6 +23,8 @@
 #include <QVBoxLayout>
 #include <QTabBar>
 
+#include "TabLineEdit.h"
+
 class TabWidget : public QWidget
 {
     Q_OBJECT
@@ -80,14 +82,16 @@ private:
 };
 
 
-class InputField : public QLineEdit
-{
+class InputField : public ShellLineEdit {
 public:
     int currentLineIdx = 0;
     QStringList &_fileLines;
     QTextEdit *_space;
-    InputField(bool &nano, QStringList &fileLines, QTextEdit *space, QWidget *parent = nullptr)
-        : QLineEdit(parent), _nano(nano), _fileLines(fileLines), _space(space) {}
+
+    InputField(bool &nano, QStringList &fileLines, QTextEdit *space,
+               std::vector<QDir> &currentDir, int &tabIdx, QWidget *parent = nullptr)
+        : ShellLineEdit(currentDir, tabIdx, parent),
+        _nano(nano), _fileLines(fileLines), _space(space) {}
 
 protected:
     void keyPressEvent(QKeyEvent *event) override
@@ -153,9 +157,11 @@ public:
         tabs->setGeometry(0,0,parent->width(),50);
         tabs->tabWidget->addTab(new QWidget(),"Terminal");
         tabContent.push_back(QString()); // first tab
-        connect(tabs->tabWidget,&QTabWidget::currentChanged,this,[=](){
-            space->setHtml(tabContent[tabs->tabWidget->currentIndex()]);
+        connect(tabs->tabWidget, &QTabWidget::currentChanged, this, [=]() mutable {
+            currentTabIndex = tabs->tabWidget->currentIndex();
+            space->setHtml(tabContent[currentTabIndex]);
         });
+
 
         space = new QTextEdit(parent);
         space->setStyleSheet("font-size: 15px");
@@ -165,7 +171,7 @@ public:
                        "| Shell booted up succesfully ...<br>| Start by writing down commands in the input field below.<br>"
                        "----------------------------------------------------------------------------</span>");
 
-        inputField = new InputField(nano,fileLines,space,parent);
+        inputField = new InputField(nano, fileLines, space, currentDir, currentTabIndex, parent);
         inputField->setFocus();
         inputField->setStyleSheet("font-size: 15px");
         inputField->setGeometry(40,space->height(),parent->width() - 40,50);
@@ -226,6 +232,7 @@ public:
     //variables
     std::vector<QDir> currentDir = {QDir::currentPath()};
     QTimer *updateTimer;
+    int currentTabIndex = 0;
 
 protected:
     void Sleep(const int &time_to_wait)
